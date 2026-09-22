@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#215e99">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ordres de mission">
+<title>Ordres de mission</title>
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="form.css">
+</head>
+<body>
+
+<header class="barre">
+  <div class="marque">
+    <img src="logo.png" alt="">
+    <div>
+      <h1>Ordres de mission</h1>
+      <p>Direction Provinciale</p>
+    </div>
+  </div>
+
+  <nav class="onglets" id="onglets">
+    <button class="onglet actif" data-vue="saisie"><i class="ic" data-ic="plume"></i><span>Nouvel ordre</span></button>
+    <button class="onglet" data-vue="archives"><i class="ic" data-ic="dossier"></i><span>Archives</span></button>
+    <button class="onglet" data-vue="agents"><i class="ic" data-ic="agents"></i><span>R&eacute;pertoire</span></button>
+    <button class="onglet" data-vue="reseau"><i class="ic" data-ic="reseau"></i><span>R&eacute;seau</span></button>
+    <button class="onglet" data-vue="parametres"><i class="ic" data-ic="reglages"></i><span>Param&egrave;tres</span></button>
+  </nav>
+
+  <div class="barre-actions">
+    <span class="etat-serveur" id="etatServeur" title="Connexion au service"><i></i>Connect&eacute;</span>
+    <button class="btn btn-fantome local-seul" id="btnDossier" title="Ouvrir le dossier des PDF">Dossier</button>
+    <button class="btn btn-fantome local-seul" id="btnQuitter" title="Fermer l'application">Quitter</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ====================== VUE : SAISIE ====================== -->
+<section class="vue active" id="vue-saisie">
+  <div class="colonnes">
+
+    <div class="panneau-saisie" id="panneauSaisie">
+
+      <div class="fil">
+        <div>
+          <h2 id="titreSaisie">Nouvel ordre de mission</h2>
+          <p class="sous-titre" id="sousTitreSaisie">Renseignez les informations : l&rsquo;aper&ccedil;u se met &agrave; jour en temps r&eacute;el.</p>
+        </div>
+        <button class="btn btn-fantome" id="btnNouveau">Vider le formulaire</button>
+      </div>
+
+      <!-- Demandeurs -->
+      <div class="bloc">
+        <div class="bloc-tete">
+          <h3><span class="puce">1</span> Demandeur<span id="nbAgents" class="compteur">1</span></h3>
+          <button class="btn btn-plus" id="btnAjouterAgent" title="Ajouter un agent &agrave; cet ordre de mission">
+            <span>+</span> Ajouter un agent
+          </button>
+        </div>
+        <p class="aide">Chaque agent ajout&eacute; g&eacute;n&egrave;re son propre ordre de mission au format A4.</p>
+        <div id="listeAgents" class="liste-agents"></div>
+      </div>
+
+      <!-- Mission -->
+      <div class="bloc">
+        <div class="bloc-tete"><h3><span class="puce">2</span> Objet de la mission</h3></div>
+        <div class="grille">
+          <label class="champ large">
+            <span>Lieu de d&eacute;placement</span>
+            <input type="text" id="m_lieu" list="l_lieux" placeholder="Ex. : T&eacute;touan">
+          </label>
+          <label class="champ large">
+            <span>Motif du d&eacute;placement</span>
+            <input type="text" id="m_motif" list="l_motifs" placeholder="Ex. : R&eacute;union de coordination">
+          </label>
+          <label class="champ"><span>Date de d&eacute;part</span><input type="date" id="m_dateDepart"></label>
+          <label class="champ"><span>Heure de d&eacute;part</span><input type="time" id="m_heureDepart"></label>
+          <label class="champ"><span>Date de retour</span><input type="date" id="m_dateRetour"></label>
+          <label class="champ"><span>Heure de retour</span><input type="time" id="m_heureRetour"></label>
+        </div>
+      </div>
+
+      <!-- Transport -->
+      <div class="bloc">
+        <div class="bloc-tete"><h3><span class="puce">3</span> Moyen de transport</h3></div>
+        <div class="transports">
+          <div class="transport">
+            <label class="coche"><input type="checkbox" id="t_covoiturage"><span>Covoiturage</span></label>
+            <input type="text" id="t_covoiturageDetail" placeholder="Pr&eacute;cisions (ex. : avec M. ...)">
+          </div>
+          <div class="transport">
+            <label class="coche"><input type="checkbox" id="t_service"><span>V&eacute;hicule de service</span></label>
+            <input type="text" id="t_serviceDetail" placeholder="Immatriculation / n&deg; de v&eacute;hicule">
+          </div>
+          <div class="transport">
+            <label class="coche"><input type="checkbox" id="t_commun"><span>Transport commun</span></label>
+            <input type="text" id="t_communDetail" placeholder="Train, autocar, taxi...">
+          </div>
+          <div class="transport">
+            <label class="coche"><input type="checkbox" id="t_personnel"><span>V&eacute;hicule personnel</span></label>
+            <div class="duo">
+              <input type="text" id="t_marque" placeholder="Marque">
+              <input type="text" id="t_puissance" placeholder="Puissance fiscale">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signature -->
+      <div class="bloc">
+        <div class="bloc-tete"><h3><span class="puce">4</span> Signature</h3></div>
+        <div class="grille">
+          <label class="champ"><span>Fait le</span><input type="date" id="s_faitLe"></label>
+          <label class="champ"><span>&Agrave;</span><input type="text" id="s_faitA" list="l_villes" placeholder="Ville"></label>
+          <label class="champ"><span>Ann&eacute;e du formulaire</span><input type="text" id="e_annee" inputmode="numeric" maxlength="4"></label>
+          <label class="champ"><span>Version du formulaire</span><input type="text" id="e_version" maxlength="6"></label>
+        </div>
+      </div>
+
+      <div class="barre-bas">
+        <div class="info" id="infoEnregistrement">Brouillon non enregistr&eacute;</div>
+        <div class="actions">
+          <button class="btn btn-fantome mobile-seul" id="btnApercuMobile">Aper&ccedil;u A4</button>
+          <button class="btn btn-fantome bureau-seul" id="btnImprimer">Imprimer</button>
+          <button class="btn btn-secondaire" id="btnEnregistrer">Enregistrer</button>
+          <button class="btn btn-principal" id="btnPdf">Enregistrer et g&eacute;n&eacute;rer le PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aper&ccedil;u -->
+    <aside class="panneau-apercu" id="panneauApercu">
+      <div class="apercu-tete">
+        <div class="apercu-titre">Aper&ccedil;u A4</div>
+        <div class="apercu-outils">
+          <div class="pages" id="pagesApercu"></div>
+          <div class="zoom">
+            <button class="btn-mini" id="zoomMoins" title="R&eacute;duire">&minus;</button>
+            <span id="zoomVal" title="Double-cliquez pour ajuster automatiquement">70&nbsp;%</span>
+            <button class="btn-mini" id="zoomPlus" title="Agrandir">+</button>
+          </div>
+          <button class="btn-mini mobile-seul" id="btnFermerApercu" title="Fermer l'aper&ccedil;u">Fermer</button>
+        </div>
+      </div>
+      <div class="apercu-corps" id="apercuCorps">
+        <div class="apercu-echelle" id="apercuEchelle"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ====================== VUE : ARCHIVES ====================== -->
+<section class="vue" id="vue-archives">
+  <div class="contenu">
+    <div class="fil">
+      <div>
+        <h2>Archives des ordres de mission</h2>
+        <p class="sous-titre">Class&eacute;s automatiquement par ann&eacute;e et par mois.</p>
+      </div>
+      <div class="filtres">
+        <input type="search" id="recherche" placeholder="Rechercher un agent, un lieu, un motif...">
+        <select id="filtreAnnee"><option value="">Toutes les ann&eacute;es</option></select>
+        <select id="filtreMois"><option value="">Tous les mois</option></select>
+      </div>
+    </div>
+    <div class="stats" id="statsArchives"></div>
+    <div id="listeArchives" class="archives"></div>
+  </div>
+</section>
+
+<!-- ====================== VUE : REPERTOIRE ====================== -->
+<section class="vue" id="vue-agents">
+  <div class="contenu">
+    <div class="fil">
+      <div>
+        <h2>R&eacute;pertoire des agents</h2>
+        <p class="sous-titre">Les agents enregistr&eacute;s ici sont propos&eacute;s automatiquement &agrave; la saisie.</p>
+      </div>
+      <button class="btn btn-principal" id="btnNouvelAgent">+ Nouvel agent</button>
+    </div>
+    <div id="tableAgents" class="table-enveloppe"></div>
+  </div>
+</section>
+
+<!-- ====================== VUE : RESEAU ====================== -->
+<section class="vue" id="vue-reseau">
+  <div class="contenu etroit">
+    <div class="fil"><div>
+      <h2>Acc&egrave;s depuis un t&eacute;l&eacute;phone ou un autre poste</h2>
+      <p class="sous-titre">L&rsquo;application s&rsquo;utilise depuis n&rsquo;importe quel appareil du m&ecirc;me r&eacute;seau Wi-Fi.</p>
+    </div></div>
+
+    <div id="reseauEtat"></div>
+
+    <div class="bloc reseau-bloc">
+      <div class="reseau-qr">
+        <div id="qrCode" class="qr"></div>
+        <p class="qr-legende">Scannez ce code avec l&rsquo;appareil photo du t&eacute;l&eacute;phone</p>
+      </div>
+      <div class="reseau-infos">
+        <h3>Adresse &agrave; ouvrir</h3>
+        <div id="reseauAdresses" class="adresses"></div>
+        <ol class="etapes">
+          <li>Connectez le t&eacute;l&eacute;phone au <b>m&ecirc;me r&eacute;seau Wi-Fi</b> que ce poste.</li>
+          <li>Scannez le QR code, ou saisissez l&rsquo;adresse dans le navigateur.</li>
+          <li>Ajoutez la page &agrave; l&rsquo;&eacute;cran d&rsquo;accueil pour la retrouver comme une application.</li>
+        </ol>
+        <p class="aide">Ce poste doit rester allum&eacute; et l&rsquo;application ouverte : c&rsquo;est lui qui
+          conserve les donn&eacute;es et fabrique les PDF.</p>
+      </div>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-tete"><h3>Informations techniques</h3></div>
+      <div id="reseauInfos" class="infos-grille"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== VUE : PARAMETRES ====================== -->
+<section class="vue" id="vue-parametres">
+  <div class="contenu etroit">
+    <div class="fil"><div>
+      <h2>Param&egrave;tres</h2>
+      <p class="sous-titre">Valeurs pr&eacute;-remplies automatiquement dans chaque nouvel ordre de mission.</p>
+    </div></div>
+
+    <div class="bloc">
+      <div class="bloc-tete"><h3>Valeurs par d&eacute;faut du demandeur</h3></div>
+      <div class="grille">
+        <label class="champ"><span>Direction</span><input type="text" id="p_direction"></label>
+        <label class="champ"><span>D&eacute;partement</span><input type="text" id="p_departement"></label>
+        <label class="champ"><span>Division</span><input type="text" id="p_division"></label>
+        <label class="champ"><span>Service</span><input type="text" id="p_service"></label>
+        <label class="champ large"><span>Province / Pr&eacute;fecture</span><input type="text" id="p_province"></label>
+      </div>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-tete"><h3>En-t&ecirc;te du document</h3></div>
+      <div class="grille">
+        <label class="champ large"><span>Titre du formulaire</span><input type="text" id="p_titre"></label>
+        <label class="champ"><span>Version</span><input type="text" id="p_version"></label>
+        <label class="champ"><span>Ville de signature</span><input type="text" id="p_ville"></label>
+      </div>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-tete"><h3>Fichiers PDF</h3></div>
+      <div class="grille">
+        <label class="champ"><span>Pr&eacute;fixe des fichiers</span><input type="text" id="p_prefixe" maxlength="10"></label>
+        <label class="champ large"><span>Dossier de classement</span><input type="text" id="p_dossier" readonly></label>
+      </div>
+      <p class="aide">Chaque PDF est enregistr&eacute; dans <code>Ann&eacute;e &rsaquo; Mois</code>, par exemple
+        <code>2026 &rsaquo; 09 - Septembre</code>.</p>
+      <label class="coche"><input type="checkbox" id="p_regroupe">
+        <span>Regrouper tous les agents d&rsquo;un m&ecirc;me ordre dans un seul fichier PDF
+          (par d&eacute;faut&nbsp;: un PDF distinct par agent)</span></label>
+      <div class="actions-bloc">
+        <button class="btn btn-fantome" id="btnExport">Exporter une sauvegarde</button>
+        <button class="btn btn-fantome" id="btnImport">Importer une sauvegarde</button>
+        <input type="file" id="fichierImport" accept="application/json" hidden>
+      </div>
+    </div>
+
+    <div class="bloc local-seul">
+      <div class="bloc-tete"><h3>Application</h3></div>
+      <div class="actions-bloc">
+        <button class="btn btn-fantome" id="btnDossier2">Ouvrir le dossier des PDF</button>
+        <button class="btn btn-fantome" id="btnQuitter2">Quitter l&rsquo;application</button>
+      </div>
+    </div>
+
+    <div class="barre-bas">
+      <div class="info">Les param&egrave;tres s&rsquo;appliquent aux nouveaux ordres de mission.</div>
+      <div class="actions"><button class="btn btn-principal" id="btnEnregistrerParams">Enregistrer</button></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<datalist id="l_noms"></datalist>
+<datalist id="l_lieux"></datalist>
+<datalist id="l_motifs"></datalist>
+<datalist id="l_villes"></datalist>
+<datalist id="l_fonctions"></datalist>
+
+<div id="toasts" class="toasts"></div>
+
+<div class="voile" id="voile" hidden>
+  <div class="voile-boite">
+    <div class="rouet"></div>
+    <div id="voileTexte">G&eacute;n&eacute;ration des PDF en cours&hellip;</div>
+  </div>
+</div>
+
+<div class="modale" id="modale" hidden>
+  <div class="modale-boite">
+    <h3 id="modaleTitre">Confirmation</h3>
+    <p id="modaleTexte"></p>
+    <div class="modale-actions">
+      <button class="btn btn-fantome" id="modaleAnnuler">Annuler</button>
+      <button class="btn btn-danger" id="modaleOk">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gabarit d'une fiche agent -->
+<template id="gabaritAgent">
+  <div class="agent">
+    <div class="agent-tete">
+      <span class="agent-index">Agent 1</span>
+      <div class="agent-outils">
+        <button type="button" class="btn-mini js-copier" title="Reprendre les informations de service du 1er agent">Copier le service</button>
+        <button type="button" class="btn-mini js-annuaire" title="Ajouter au r&eacute;pertoire">Au r&eacute;pertoire</button>
+        <button type="button" class="btn-mini danger js-suppr" title="Retirer cet agent">Retirer</button>
+      </div>
+    </div>
+    <div class="grille">
+      <label class="champ large"><span>Nom et pr&eacute;nom</span>
+        <input type="text" data-c="nom" list="l_noms" placeholder="NOM Pr&eacute;nom" autocomplete="off"></label>
+      <label class="champ"><span>Matricule</span><input type="text" data-c="matricule"></label>
+      <label class="champ"><span>Fonction</span><input type="text" data-c="fonction" list="l_fonctions"></label>
+      <label class="champ"><span>Direction</span><input type="text" data-c="direction"></label>
+      <label class="champ"><span>D&eacute;partement</span><input type="text" data-c="departement"></label>
+      <label class="champ"><span>Division</span><input type="text" data-c="division"></label>
+      <label class="champ"><span>Service</span><input type="text" data-c="service"></label>
+      <label class="champ large"><span>Province / Pr&eacute;fecture</span><input type="text" data-c="province"></label>
+    </div>
+  </div>
+</template>
+
+<script src="qr.js"></script>
+<script src="formulaire.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

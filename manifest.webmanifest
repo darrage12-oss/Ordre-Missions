@@ -1,0 +1,16 @@
+{
+  "name": "Ordres de mission — Direction Provinciale",
+  "short_name": "Ordres de mission",
+  "description": "Saisie, génération et archivage des ordres de mission.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2f5f9",
+  "theme_color": "#215e99",
+  "icons": [
+    { "src": "logo.png", "sizes": "185x147", "type": "image/png", "purpose": "any" },
+    { "src": "icone.ico", "sizes": "128x128", "type": "image/x-icon", "purpose": "any" }
+  ]
+}

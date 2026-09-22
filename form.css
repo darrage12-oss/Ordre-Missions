@@ -1,0 +1,176 @@
+/* ==========================================================================
+   form.css — Reproduction fidele du formulaire « Ordre de mission »
+   Toutes les coordonnees sont exprimees en points typographiques (pt),
+   exactement comme dans le PDF d'origine (page A4 : 595,32 x 841,92 pt).
+   Cette feuille est utilisee a l'identique pour l'apercu ecran et pour
+   l'impression PDF, ce qui garantit une mise en page strictement conforme.
+   ========================================================================== */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+.om-page {
+  position: relative;
+  width: 595.28pt;
+  height: 841.6pt;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  font-family: "Aptos Narrow", "Arial Narrow", Calibri, Arial, sans-serif;
+  font-size: 9pt;
+  line-height: 1;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  box-sizing: border-box;
+}
+
+.om-page * {
+  box-sizing: border-box;
+}
+
+.om-page + .om-page {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* --- Traits du tableau ---------------------------------------------------- */
+.om-rule {
+  position: absolute;
+  background: #000;
+}
+
+/* --- Bandeaux bleus de section ------------------------------------------- */
+.om-bar {
+  position: absolute;
+  background: #215e99;
+  color: #fff;
+  font-family: "Aptos Narrow", "Arial Narrow", Calibri, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 11.04pt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.1pt;
+}
+
+/* --- En-tete : logo et cartouche ----------------------------------------- */
+.om-logo {
+  position: absolute;
+  left: 46.4pt;
+  top: 17.5pt;      /* 841.92 - 771.33 - 53.086 */
+  width: 66.65pt;
+  height: 53.09pt;
+  object-fit: contain;
+}
+
+.om-head {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  padding: 0 2pt;
+}
+
+.om-head.t1 { font-weight: 700; font-size: 14.04pt; }
+.om-head.t2 { font-weight: 700; font-size: 18pt; }
+.om-head.t3 { font-size: 11.04pt; }
+
+/* --- Lignes de saisie ----------------------------------------------------- */
+.om-row {
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.om-cell {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.om-lbl {
+  flex: 0 0 auto;
+  padding-right: 3pt;
+}
+
+.om-fill {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-bottom: 0.6pt dotted #4a4a4a;
+  padding: 0 2pt 0.6pt 2pt;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.om-val {
+  font-weight: 600;
+  color: #10233a;
+}
+
+.om-free {
+  position: absolute;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.om-dots {
+  position: absolute;
+  height: 0;
+  border-top: 0.6pt dotted #4a4a4a;
+}
+
+/* --- Cases a cocher ------------------------------------------------------- */
+.om-box {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 7.2pt;
+  height: 7.2pt;
+  border: 0.7pt solid #1a1a1a;
+  margin-right: 4pt;
+  position: relative;
+  top: 0.4pt;
+}
+
+.om-box.on {
+  background: #215e99;
+  border-color: #215e99;
+}
+
+.om-box.on::after {
+  content: "";
+  position: absolute;
+  left: 1.9pt;
+  top: 0.4pt;
+  width: 2.1pt;
+  height: 4.2pt;
+  border: solid #fff;
+  border-width: 0 1.1pt 1.1pt 0;
+  transform: rotate(42deg);
+}
+
+/* --- Note de bas de page -------------------------------------------------- */
+.om-note {
+  position: absolute;
+  line-height: 1.22;
+  font-size: 9pt;
+}
+
+/* --- Impression ----------------------------------------------------------- */
+@media print {
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .om-page {
+    margin: 0;
+    box-shadow: none;
+  }
+}
