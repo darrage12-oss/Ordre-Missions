@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a5276">
+    <title>Ordre de Mission - SRM TTA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Local offline library first, CDN fallback -->
+    <script src="js/html2pdf.bundle.min.js"></script>
+    <script>
+        if (typeof html2pdf === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\\/script>');
+        }
+    </script>
+    <script src="js/logo_data.js"></script>
+    <script>
+        // Register Service Worker for 100% offline access
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker installé pour le mode Hors-Ligne', reg))
+                    .catch(err => console.log('SW erreur', err));
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-container">
+                <img src="assets/logo.png" alt="Logo SRM TTA" class="sidebar-logo">
+            </div>
+            <h2>SRM TTA</h2>
+            <p class="sidebar-subtitle">Gestion des Ordres de Mission</p>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-btn active" data-view="new" onclick="App.switchView('new')">
+                <i class="fas fa-file-signature"></i>
+                <span>Créer Ordre</span>
+            </button>
+            <button class="nav-btn" data-view="history" onclick="App.switchView('history')">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Historique Mensuel</span>
+            </button>
+            <button class="nav-btn" data-view="users" onclick="App.switchView('users')">
+                <i class="fas fa-users-cog"></i>
+                <span>Gestion Agents</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <button class="menu-toggle" id="menu-toggle" onclick="App.toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="user-bar">
+                <div class="user-select-group">
+                    <label for="active-user-select"><i class="fas fa-user-check"></i> Agent :</label>
+                    <select id="active-user-select" onchange="Users.selectActiveUser(this.value)">
+                        <option value="">-- Choisir un agent (Remplissage Auto) --</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="Users.openModal()">
+                        <i class="fas fa-user-plus"></i> <span class="hide-mobile">Nouvel Agent</span>
+                    </button>
+                </div>
+                <div class="active-user-info" id="active-user-info"></div>
+            </div>
+        </header>
+
+        <!-- ===== VIEW: NOUVEL ORDRE ===== -->
+        <div id="view-new" class="view active">
+            <div class="view-header">
+                <div>
+                    <h1><i class="fas fa-file-invoice"></i> Établir un Ordre de Mission</h1>
+                    <p class="view-subtitle">Rendu conforme 100% au format Direction Provinciale A4</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-secondary" onclick="Missions.previewAndPrint()">
+                        <i class="fas fa-eye"></i> Aperçu A4 / Imprimer
+                    </button>
+                </div>
+            </div>
+
+            <form id="mission-form" class="mission-form" onsubmit="Missions.save(event)">
+                <input type="hidden" id="mission-id" value="">
+
+                <!-- Section Agent -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <span><i class="fas fa-id-badge"></i> Agent</span>
+                        <span class="section-hint">Sélectionnez l'agent en haut pour remplir automatiquement</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Nom et prénom :</label>
+                            <input type="text" id="m-nom" readonly placeholder="Auto-rempli via la barre d'agent">
+                        </div>
+                        <div class="form-group">
+                            <label>Matricule :</label>
+                            <input type="text" id="m-matricule" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Fonction :</label>
+                            <input type="text" id="m-fonction" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Direction :</label>
+                            <input type="text" id="m-direction" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Département :</label>
+                            <input type="text" id="m-departement" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Division :</label>
+                            <input type="text" id="m-division" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Service :</label>
+                            <input type="text" id="m-service" readonly>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Province / Préfecture :</label>
+                            <input type="text" id="m-province" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Mission -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <span><i class="fas fa-map-marked-alt"></i> Mission</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Lieu de déplacement : <span class="required">*</span></label>
+                            <input type="text" id="m-lieu" required placeholder="Ex: AIN BIDA">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Motif du déplacement : <span class="required">*</span></label>
+                            <textarea id="m-motif" required rows="2" placeholder="Ex: Validation des tracés relatifs au remplacement des supports au sol"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de départ : <span class="required">*</span></label>
+                            <input type="date" id="m-date-depart" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Heure de départ :</label>
+                            <input type="time" id="m-heure-depart" value="08:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Date de retour : <span class="required">*</span></label>
+                            <input type="date" id="m-date-retour" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Heure de retour :</label>
+                            <input type="time" id="m-heure-retour" value="21:30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Moyen de transport -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <span><i class="fas fa-car-side"></i> Moyen de transport</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="m-covoiturage">
+                                <span>Covoiturage</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="m-vehicule-service" checked>
+                                <span>Véhicule de service</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Immatriculation (si véhicule service) :</label>
+                            <input type="text" id="m-vehicule-service-num" value="6533/Y/6" placeholder="Ex: 6533/Y/6">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="m-transport-commun">
+                                <span>Transport commun</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="m-vehicule-perso">
+                                <span>Véhicule personnel</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Marque :</label>
+                            <input type="text" id="m-vehicule-perso-marque" placeholder="Ex: Dacia Duster">
+                        </div>
+                        <div class="form-group">
+                            <label>Puissance Fiscale :</label>
+                            <input type="text" id="m-puissance-fiscale" placeholder="Ex: 6 CV">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Lieu et Date -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <span><i class="fas fa-stamp"></i> Signature & Délivrance</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Fait le :</label>
+                            <input type="date" id="m-date-creation">
+                        </div>
+                        <div class="form-group">
+                            <label>à (Lieu) :</label>
+                            <input type="text" id="m-lieu-creation" placeholder="Ex: OUEZZANE">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Enregistrer Mission
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg" onclick="Missions.previewAndPrint()">
+                        <i class="fas fa-file-pdf"></i> Aperçu A4 / Imprimer
+                    </button>
+                    <button type="button" class="btn btn-outline btn-lg" onclick="Missions.resetForm()">
+                        <i class="fas fa-undo"></i> Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ===== VIEW: HISTORIQUE ===== -->
+        <div id="view-history" class="view">
+            <div class="view-header">
+                <div>
+                    <h1><i class="fas fa-history"></i> Historique des Ordres de Mission</h1>
+                    <p class="view-subtitle">Consultez, réimprimez ou téléchargez les ordres par mois</p>
+                </div>
+            </div>
+
+            <div class="history-controls">
+                <div class="month-filter">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="History.prevMonth()">
+                        <i class="fas fa-chevron-left"></i> Mois Précédent
+                    </button>
+                    <span class="month-label" id="history-month-label"></span>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="History.nextMonth()">
+                        Mois Suivant <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="history-stats" id="history-stats"></div>
+            </div>
+
+            <div class="history-list" id="history-list"></div>
+        </div>
+
+        <!-- ===== VIEW: AGENTS ===== -->
+        <div id="view-users" class="view">
+            <div class="view-header">
+                <div>
+                    <h1><i class="fas fa-users"></i> Annuaire des Agents</h1>
+                    <p class="view-subtitle">Enregistrez chaque agent une fois pour le remplissage automatique 1-clic</p>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="Users.openModal()">
+                    <i class="fas fa-user-plus"></i> Ajouter un Agent
+                </button>
+            </div>
+
+            <div class="users-list" id="users-list"></div>
+        </div>
+
+    </main>
+
+    <!-- ===== MODAL: AGENT ===== -->
+    <div class="modal-overlay" id="modal-user" onclick="Users.closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modal-user-title"><i class="fas fa-user-plus"></i> Ajouter un Agent</h2>
+                <button type="button" class="modal-close" onclick="Users.closeModal()">&times;</button>
+            </div>
+            <form id="user-form" onsubmit="Users.saveUser(event)">
+                <input type="hidden" id="u-id" value="">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Nom et prénom : <span class="required">*</span></label>
+                        <input type="text" id="u-nom" required placeholder="Ex: DARRAGE Ayoub">
+                    </div>
+                    <div class="form-group">
+                        <label>Matricule : <span class="required">*</span></label>
+                        <input type="text" id="u-matricule" required placeholder="Ex: 83 182 D">
+                    </div>
+                    <div class="form-group">
+                        <label>Fonction : <span class="required">*</span></label>
+                        <input type="text" id="u-fonction" required placeholder="Ex: Conducteur de Travaux">
+                    </div>
+                    <div class="form-group">
+                        <label>Direction : <span class="required">*</span></label>
+                        <input type="text" id="u-direction" required placeholder="Ex: OUEZZANE">
+                    </div>
+                    <div class="form-group">
+                        <label>Département : <span class="required">*</span></label>
+                        <input type="text" id="u-departement" required placeholder="Ex: Etude et Travaux">
+                    </div>
+                    <div class="form-group">
+                        <label>Division : <span class="required">*</span></label>
+                        <input type="text" id="u-division" required placeholder="Ex: Etude et Travaux Réseaux Electricité">
+                    </div>
+                    <div class="form-group">
+                        <label>Service :</label>
+                        <input type="text" id="u-service" placeholder="Ex: Service Exploitation">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Province / Préfecture : <span class="required">*</span></label>
+                        <input type="text" id="u-province" required placeholder="Ex: OUEZZANE">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer l'Agent
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="Users.closeModal()">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: APERÇU 100% A4 ===== -->
+    <div class="modal-overlay modal-preview-overlay" id="modal-preview" onclick="PDF.closePreview(event)">
+        <div class="modal modal-preview" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-pdf"></i> Aperçu A4 Conforme 100%</h2>
+                <div class="preview-actions">
+                    <button type="button" class="btn btn-primary" onclick="PDF.exportPDF()">
+                        <i class="fas fa-download"></i> Télécharger PDF A4
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="PDF.print()">
+                        <i class="fas fa-print"></i> Imprimer
+                    </button>
+                    <button type="button" class="modal-close" onclick="PDF.closePreview()">&times;</button>
+                </div>
+            </div>
+            <div class="preview-container" id="preview-container">
+                <!-- Exact A4 container generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PRINT TEMPLATE (pour impression navigateur) ===== -->
+    <div id="print-template" class="print-template"></div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/demo_data.js"></script>
+    <script src="js/users.js"></script>
+    <script src="js/missions.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
